@@ -1,0 +1,33 @@
+{% extends 'expenses/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title text-center">Add Member to {{ group.name }}</h2>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        {{ form.username }}
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        Enter the exact username of the person you want to add.
+                        They must already have an account on this site.
+                    </div>
+                    
+                    <!-- SINGLE set of buttons - removed duplicates -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">Add Member</button>
+                        <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-secondary">Cancel</a>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

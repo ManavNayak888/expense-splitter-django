@@ -1,0 +1,36 @@
+{% extends 'expenses/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title text-center">Edit Expense</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">What was this expense for?</label>
+                        {{ form.description }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Amount (₹)</label>
+                        {{ form.amount }}
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        Originally paid by <strong>{{ expense.paid_by.username }}</strong> in <strong>{{ expense.group.name }}</strong>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Update Expense</button>
+                        <a href="{% url 'group_detail' expense.group.id %}" class="btn btn-outline-secondary">Cancel</a>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -2,15 +2,96 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-12">
-        <h1>Welcome to Expense Splitter!</h1>
-        <p>Start managing your shared expenses with friends and family.</p>
+    <div class="col-md-8">
+        <h2>Your Groups</h2>
+        {% for group in groups %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="flex-grow-1">
+                        <h5 class="card-title">{{ group.name }}</h5>
+                        {% if group.description %}
+                        <p class="card-text text-muted">{{ group.description }}</p>
+                        {% endif %}
+                        <p class="card-text">
+                            <small>
+                                Members: {{ group.members.count }} | 
+                                Expenses: {{ group.expenses.count }} |
+                                {% if group.created_by == request.user %}
+                                <span class="badge bg-primary">You created this group</span>
+                                {% endif %}
+                            </small>
+                        </p>
+                        
+                        <!-- Show user's balance in this group -->
+                        {% with balances=group.calculate_balances %}
+                            {% if balances %}
+                                {% for member, balance in balances.items %}
+                                    {% if member == request.user %}
+                                    <p class="card-text">
+                                        <strong>
+                                            {% if balance > 0 %}
+                                            <span class="text-success">You are owed: ${{ balance|floatformat:2 }}</span>
+                                            {% elif balance < 0 %}
+                                            <span class="text-danger">You owe: ${{ balance|floatformat:2 }}</span>
+                                            {% else %}
+                                            <span class="text-muted">Settled up</span>
+                                            {% endif %}
+                                        </strong>
+                                    </p>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                    <div>
+                        <a href="{% url 'group_detail' group.id %}" class="btn btn-primary">View Group</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="alert alert-info">
+            You haven't joined any groups yet. <a href="{% url 'create_group' %}">Create your first group!</a>
+        </div>
+        {% endfor %}
         
+        <a href="{% url 'create_group' %}" class="btn btn-success">Create New Group</a>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Recent Activity Card -->
         <div class="card">
             <div class="card-body">
+                <h5 class="card-title">Recent Activity</h5>
+                {% if recent_expenses %}
+                    {% for expense in recent_expenses %}
+                    <div class="border-bottom py-2">
+                        <strong>{{ expense.description }}</strong><br>
+                        <small>${{ expense.amount }} in {{ expense.group.name }}</small>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No recent expenses</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Quick Stats Card -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">Quick Stats</h5>
+                <p>Total Groups: {{ groups|length }}</p>
+                <p>Total Expenses: {{ total_expenses_count }}</p>
+            </div>
+        </div>
+        
+        <!-- Quick Actions Card -->
+        <div class="card mt-3">
+            <div class="card-body">
                 <h5 class="card-title">Quick Actions</h5>
-                <a href="#" class="btn btn-primary">Create Group</a>
-                <a href="#" class="btn btn-success">Add Expense</a>
+                <a href="{% url 'create_group' %}" class="btn btn-success w-100 mb-2">Create New Group</a>
+                <a href="#" class="btn btn-outline-primary w-100">View All Expenses</a>
             </div>
         </div>
     </div>

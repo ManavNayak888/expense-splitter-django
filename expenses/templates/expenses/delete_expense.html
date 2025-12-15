@@ -1,0 +1,28 @@
+{% extends 'expenses/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body text-center">
+                <h2 class="card-title text-danger">Delete Expense?</h2>
+                
+                <div class="alert alert-warning">
+                    <h5>"{{ expense.description }}"</h5>
+                    <p>Amount: <strong>₹{{ expense.amount }}</strong></p>
+                    <p>This action cannot be undone.</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger">Yes, Delete Expense</button>
+                        <a href="{% url 'group_detail' expense.group.id %}" class="btn btn-outline-secondary">Cancel</a>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

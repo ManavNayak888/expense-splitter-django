@@ -11,6 +11,8 @@ def register(request):
             login(request, user)
             messages.success(request, 'Registration Successful !')
             return redirect('dashboard')
+        else:
+            return render(request, 'users/register.html', {'form': form})
     else:
         form = UserCreationForm()
         return render(request, 'users/register.html', {'form': form})
@@ -24,8 +26,8 @@ def user_login(request):
             messages.success(request, f'Welcome Back, {user.username}')
             return redirect('dashboard')
     else:
-            form = AuthenticationForm()
-            return render(request, 'users/login.html', {'form': form})
+        form = AuthenticationForm()
+        return render(request, 'users/login.html', {'form': form})
 
 def user_logout(request):
     logout(request)

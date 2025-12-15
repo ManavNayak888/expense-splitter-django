@@ -1,0 +1,52 @@
+{% extends 'expenses/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title text-center">Add Expense to {{ group.name }}</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            {{ form.description.label }}
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                        <div class="text-danger">
+                            {{ form.description.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.amount.id_for_label }}" class="form-label">
+                            {{ form.amount.label }}
+                        </label>
+                        {{ form.amount }}
+                        {% if form.amount.errors %}
+                        <div class="text-danger">
+                            {{ form.amount.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> This expense will be split equally among all {{ group.members.count }} group members.
+                        Each person will owe <strong>₹{{ expense.split_equally|floatformat:2 }}</strong>.
+                    </div>
+                    
+                    <!-- SINGLE set of buttons - removed duplicates -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">Add Expense</button>
+                        <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-secondary">Cancel</a>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
