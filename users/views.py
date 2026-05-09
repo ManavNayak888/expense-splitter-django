@@ -4,30 +4,41 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 
 def register(request):
+    if request.user.is_authenticated:        # ← add this
+        return redirect('dashboard')
+
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, 'Registration Successful !')
+            messages.success(request, 'Registration Successful!')
             return redirect('dashboard')
-        else:
-            return render(request, 'users/register.html', {'form': form})
     else:
         form = UserCreationForm()
-        return render(request, 'users/register.html', {'form': form})
+    return render(request, 'users/register.html', {'form': form})
 
 def user_login(request):
+    if request.user.is_authenticated:        # ← add this
+        return redirect('dashboard')
+
     if request.method == 'POST':
-        form = AuthenticationForm(request, data= request.POST)
+        form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
-            user= form.get_user()
+            user = form.get_user()
             login(request, user)
-            messages.success(request, f'Welcome Back, {user.username}')
+            messages.success(request, f'Welcome back, {user.username}!')
             return redirect('dashboard')
+        else:
+            if 'username' in form.errors:
+                messages.error(request, 'Username not found.')
+            elif 'password' in form.errors:
+                messages.error(request, 'Incorrect password.')
+            else:
+                messages.error(request, 'Invalid login credentials.')
     else:
         form = AuthenticationForm()
-        return render(request, 'users/login.html', {'form': form})
+    return render(request, 'users/login.html', {'form': form})
 
 def user_logout(request):
     logout(request)

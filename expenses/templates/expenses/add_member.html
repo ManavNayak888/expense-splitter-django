@@ -1,33 +1,55 @@
 {% extends 'expenses/base.html' %}
 
+{% block title %}Add Member — {{ group.name }}{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title text-center">Add Member to {{ group.name }}</h2>
-                
+
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'group_detail' group.id %}">{{ group.name }}</a></li>
+                <li class="breadcrumb-item active">Add Member</li>
+            </ol>
+        </nav>
+
+        <div class="card nav-card">
+            <div class="card-body p-4">
+                <h4 class="card-title mb-1">
+                    <i class="bi bi-person-plus me-2"></i>Add Member
+                </h4>
+                <p class="text-muted small mb-4">Adding to <strong>{{ group.name }}</strong></p>
+
                 <form method="post">
                     {% csrf_token %}
+
                     <div class="mb-3">
-                        <label class="form-label">Username</label>
+                        <label class="form-label fw-semibold">Username</label>
                         {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                        {% endif %}
                     </div>
-                    
-                    <div class="alert alert-info">
-                        Enter the exact username of the person you want to add.
-                        They must already have an account on this site.
+
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Enter the exact username of the person you want to add. They must already have an account.
                     </div>
-                    
-                    <!-- SINGLE set of buttons - removed duplicates -->
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-success">Add Member</button>
-                        <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-secondary">Cancel</a>
-                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-person-plus me-1"></i>Add Member
+                        </button>
+                        <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Cancel
+                        </a>
                     </div>
                 </form>
             </div>
         </div>
+
     </div>
 </div>
 {% endblock %}

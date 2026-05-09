@@ -1,0 +1,70 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}Settle Up — {{ group.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'group_detail' group.id %}">{{ group.name }}</a></li>
+                <li class="breadcrumb-item active">Settle Up</li>
+            </ol>
+        </nav>
+
+        <div class="card nav-card">
+            <div class="card-body p-4 text-center">
+
+                <div class="mb-3">
+                    <i class="bi bi-cash-coin display-4 text-success"></i>
+                </div>
+
+                <h4 class="mb-1">Settle Up</h4>
+                <p class="text-muted small mb-4">Record a payment to clear your debt.</p>
+
+                <div class="alert alert-warning text-start">
+                    <p class="mb-1">
+                        <i class="bi bi-person me-2"></i>
+                        From: <strong>{{ settlement.from_user.username }}</strong> (You)
+                    </p>
+                    <p class="mb-1">
+                        <i class="bi bi-person-check me-2"></i>
+                        To: <strong>{{ settlement.to_user.username }}</strong>
+                    </p>
+                    <p class="mb-0">
+                        <i class="bi bi-cash me-2"></i>
+                        Amount: <strong>₹{{ settlement.amount|floatformat:2 }}</strong>
+                    </p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3 text-start">
+                        <label for="note" class="form-label fw-semibold">
+                            Note <span class="text-muted fw-normal">(optional)</span>
+                        </label>
+                        <input type="text" name="note" id="note"
+                            class="form-control"
+                            placeholder="Paid via UPI, cash, etc.">
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-center mt-3">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle me-1"></i>Confirm Payment
+                        </button>
+                        <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

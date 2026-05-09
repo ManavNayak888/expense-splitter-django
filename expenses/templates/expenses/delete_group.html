@@ -1,33 +1,56 @@
 {% extends 'expenses/base.html' %}
 
+{% block title %}Delete Group — Expense Splitter{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body text-center">
-                <h2 class="card-title text-danger">Delete Group?</h2>
-                
-                <div class="alert alert-warning">
-                    <h4>"{{ group.name }}"</h4>
-                    <p>This will permanently delete:</p>
-                    <ul class="text-start">
-                        <li>All expenses in this group</li>
-                        <li>All balance records</li>
-                        <li>The group itself</li>
-                    </ul>
-                    <p class="fw-bold">This action cannot be undone!</p>
+    <div class="col-md-5">
+
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'group_detail' group.id %}">{{ group.name }}</a></li>
+                <li class="breadcrumb-item active">Delete Group</li>
+            </ol>
+        </nav>
+
+        <div class="card nav-card">
+            <div class="card-body p-4 text-center">
+
+                <div class="mb-3">
+                    <i class="bi bi-people display-4 text-danger"></i>
                 </div>
-                
+
+                <h4 class="text-danger mb-1">Delete Group?</h4>
+                <p class="text-muted small mb-4">This will permanently delete the group and all its expenses.</p>
+
+                <div class="alert alert-warning text-start">
+                    <p class="mb-1"><i class="bi bi-people me-2"></i>Group: <strong>{{ group.name }}</strong></p>
+                    <p class="mb-1"><i class="bi bi-person me-2"></i>Members: <strong>{{ group.members.count }}</strong></p>
+                    <p class="mb-0"><i class="bi bi-receipt me-2"></i>Expenses: <strong>{{ group.expenses.count }}</strong></p>
+                </div>
+
+                <div class="alert alert-danger text-start small">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    All expenses in this group will be <strong>permanently deleted</strong>. This cannot be undone.
+                </div>
+
                 <form method="post">
                     {% csrf_token %}
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-danger">Yes, Delete Group Permanently</button>
-                        <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-secondary">Cancel</a>
-                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+                    <div class="d-flex gap-2 justify-content-center mt-3">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i>Yes, Delete Group
+                        </button>
+                        <a href="{% url 'group_detail' group.id %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Cancel
+                        </a>
                     </div>
                 </form>
+
             </div>
         </div>
+
     </div>
 </div>
 {% endblock %}

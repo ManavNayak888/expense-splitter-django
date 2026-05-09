@@ -1,34 +1,78 @@
 {% extends 'expenses/base.html' %}
 
+{% block title %}Register — Expense Splitter{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title text-center">Register</h2>
+<div class="row justify-content-center mt-3">
+    <div class="col-md-5">
+
+        <div class="card nav-card">
+            <div class="card-body p-4">
+
+                <div class="text-center mb-4">
+                    <i class="bi bi-person-plus display-5 text-success"></i>
+                    <h4 class="mt-2 mb-0">Create Account</h4>
+                    <p class="text-muted small">Join and start splitting expenses</p>
+                </div>
+
+                {% if form.errors %}
+                <div class="alert alert-danger small">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    Please fix the errors below.
+                </div>
+                {% endif %}
+
                 <form method="post">
                     {% csrf_token %}
+
                     <div class="mb-3">
-                        <label for="id_username" class="form-label">Username</label>
-                        <input type="text" name="username" class="form-control" id="id_username" required>
-                        <div class="form-text">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</div>
+                        <label for="id_username" class="form-label fw-semibold">Username</label>
+                        <input type="text" name="username" id="id_username"
+                            class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                            value="{{ form.username.value|default:'' }}"
+                            placeholder="Choose a username" required>
+                        {% if form.username.errors %}
+                        <div class="invalid-feedback">{{ form.username.errors|join:", " }}</div>
+                        {% endif %}
+                        <div class="form-text">150 characters or fewer. Letters, digits and @/./+/-/_ only.</div>
                     </div>
+
                     <div class="mb-3">
-                        <label for="id_password1" class="form-label">Password</label>
-                        <input type="password" name="password1" class="form-control" id="id_password1" required>
+                        <label for="id_password1" class="form-label fw-semibold">Password</label>
+                        <input type="password" name="password1" id="id_password1"
+                            class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
+                            placeholder="Choose a password" required>
+                        {% if form.password1.errors %}
+                        <div class="invalid-feedback">{{ form.password1.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
-                    <div class="mb-3">
-                        <label for="id_password2" class="form-label">Password Confirmation</label>
-                        <input type="password" name="password2" class="form-control" id="id_password2" required>
-                        <div class="form-text">Enter the same password as before, for verification.</div>
+
+                    <div class="mb-4">
+                        <label for="id_password2" class="form-label fw-semibold">Confirm Password</label>
+                        <input type="password" name="password2" id="id_password2"
+                            class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
+                            placeholder="Repeat your password" required>
+                        {% if form.password2.errors %}
+                        <div class="invalid-feedback">{{ form.password2.errors|join:", " }}</div>
+                        {% endif %}
+                        <div class="form-text">Enter the same password as before for verification.</div>
                     </div>
-                    <button type="submit" class="btn btn-success w-100">Register</button>
+
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi bi-person-plus me-1"></i>Create Account
+                    </button>
                 </form>
-                <p class="text-center mt-3">
-                    Already have an account? <a href="{% url 'login' %}">Login here</a>
+
+                <hr>
+
+                <p class="text-center text-muted small mb-0">
+                    Already have an account?
+                    <a href="{% url 'login' %}" class="text-decoration-none">Login here</a>
                 </p>
+
             </div>
         </div>
+
     </div>
 </div>
 {% endblock %}

@@ -1,174 +1,239 @@
 {% extends 'expenses/base.html' %}
-{% load custom_filters %}
+
+{% block title %}{{ group.name }} — Expense Splitter{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>{{ group.name }}</h2>
-    <a href="{% url 'create_expense' group.id %}" class="btn btn-success">+ Add Expense</a>
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">{{ group.name }}</li>
+            </ol>
+        </nav>
+        <h3 class="mb-0">{{ group.name }}</h3>
+        {% if group.description %}
+        <p class="text-muted small mb-0">{{ group.description }}</p>
+        {% endif %}
+    </div>
+    <a href="{% url 'create_expense' group.id %}" class="btn btn-success">
+        <i class="bi bi-plus-circle me-1"></i>Add Expense
+    </a>
 </div>
 
-{% if group.description %}
-<p class="text-muted">{{ group.description }}</p>
-{% endif %}
+<hr class="mb-4">
 
 <div class="row">
+    <!-- Left Column: Expenses -->
     <div class="col-md-8">
-        <h4>Recent Expenses</h4>
+        <h5 class="text-muted text-uppercase mb-3">
+            <i class="bi bi-receipt me-1"></i>Expenses
+        </h5>
+
         {% if expenses %}
             {% for expense in expenses %}
-            <div class="card mb-3">
+            <div class="card nav-card mb-3">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
-                            <h5 class="card-title">{{ expense.description }}</h5>
-                            <p class="card-text">
-                                Paid by: <strong>{{ expense.paid_by.username }}</strong><br>
-                                Amount: <strong>${{ expense.amount }}</strong><br>
-                                Date: {{ expense.date|date:"M d, Y" }}
+                            <h6 class="card-title mb-1">{{ expense.description }}</h6>
+                            <p class="text-muted small mb-1">
+                                <i class="bi bi-person me-1"></i>Paid by <strong>{{ expense.paid_by.username }}</strong>
+                                {% if expense.paid_by == request.user %}
+                                <span class="badge bg-secondary ms-1">You</span>
+                                {% endif %}
+                            </p>
+                            <p class="text-muted small mb-0">
+                                <i class="bi bi-calendar me-1"></i>{{ expense.date|date:"M d, Y" }}
                             </p>
                         </div>
                         <div class="text-end">
-                            <small class="text-muted">${{ expense.split_equally }} each</small>
-                            <div class="mt-2">
-                                {% if expense.paid_by == request.user %}
-                                <a href="{% url 'edit_expense' expense.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
-                                <a href="{% url 'delete_expense' expense.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
-                                {% endif %}
-                            </div>
+                            <h5 class="text-success mb-1">₹{{ expense.amount }}</h5>
+                            <small class="text-muted d-block mb-2">₹{{ expense.split_equally|floatformat:2 }} each</small>
+                            {% if expense.paid_by == request.user %}
+                            <a href="{% url 'edit_expense' expense.id %}" class="btn btn-sm btn-outline-primary me-1">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'delete_expense' expense.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
             {% endfor %}
         {% else %}
-            <div class="alert alert-info">
-                No expenses yet. <a href="{% url 'create_expense' group.id %}">Add the first expense!</a>
+            <div class="card nav-card">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-receipt display-4 text-muted"></i>
+                    <p class="mt-3 text-muted">No expenses yet.</p>
+                    <a href="{% url 'create_expense' group.id %}" class="btn btn-success">
+                        <i class="bi bi-plus-circle me-1"></i>Add First Expense
+                    </a>
+                </div>
             </div>
         {% endif %}
     </div>
-    
+
+    <!-- Right Column: Sidebar -->
     <div class="col-md-4">
-        <!-- Member Management Card -->
-        <div class="card">
+
+        <!-- Members Card -->
+        <div class="card nav-card mb-3">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="card-title mb-0">Group Members</h5>
-                    {% if group|can_manage_members:request.user %}
-                    <a href="{% url 'add_member' group.id %}" class="btn btn-sm btn-success">+ Add Member</a>
+                    <h6 class="text-muted text-uppercase mb-0">
+                        <i class="bi bi-people me-1"></i>Members
+                    </h6>
+                    {% if group.created_by == request.user %}
+                    <a href="{% url 'add_member' group.id %}" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-person-plus"></i>
+                    </a>
                     {% endif %}
                 </div>
-                
+
                 <ul class="list-group list-group-flush">
                     {% for member in group.members.all %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
                         <div>
-                            {{ member.username }}
+                            <span class="fw-semibold">{{ member.username }}</span>
                             {% if member == group.created_by %}
-                            <span class="badge bg-primary">Admin</span>
+                            <span class="badge bg-primary ms-1">Admin</span>
                             {% endif %}
-                            
-                            <!-- Show member's balance -->
-                            <small class="text-muted d-block">
-                                {% with balance=balances|get_item:member %}
-                                {% if balance > 0 %}
-                                <span class="text-success">+${{ balance|floatformat:2 }}</span>
-                                {% elif balance < 0 %}
-                                <span class="text-danger">${{ balance|floatformat:2 }}</span>
-                                {% else %}
-                                <span class="text-muted">$0.00</span>
+                            {% if member == request.user %}
+                            <span class="badge bg-secondary ms-1">You</span>
+                            {% endif %}
+
+                            <!-- Member balance -->
+                            {% for bal_member, balance in balances.items %}
+                                {% if bal_member == member %}
+                                <small class="d-block">
+                                    {% if balance > 0 %}
+                                    <span class="text-success">+₹{{ balance|floatformat:2 }}</span>
+                                    {% elif balance < 0 %}
+                                    <span class="text-danger">-₹{{ balance|floatformat:2|slice:"1:" }}</span>
+                                    {% else %}
+                                    <span class="text-muted">Settled</span>
+                                    {% endif %}
+                                </small>
                                 {% endif %}
-                                {% endwith %}
-                            </small>
+                            {% endfor %}
                         </div>
-                        
-                        {% if group|can_manage_members:request.user and member != group.created_by %}
-                        <a href="{% url 'remove_member' group.id member.id %}" 
+
+                        {% if group.created_by == request.user and member != group.created_by %}
+                        <a href="{% url 'remove_member' group.id member.id %}"
                            class="btn btn-sm btn-outline-danger"
-                           onclick="return confirm('Remove {{ member.username }} from group?')">Remove</a>
+                           onclick="return confirm('Remove {{ member.username }} from group?')">
+                            <i class="bi bi-x"></i>
+                        </a>
                         {% endif %}
                     </li>
                     {% endfor %}
                 </ul>
             </div>
         </div>
-        
-        <!-- Balance Summary Card -->
-        <div class="card mt-3">
-            <div class="card-body">
-                <h5 class="card-title">💰 Balance Summary</h5>
-                
-                <div class="row">
-                    {% for member, balance in balances.items %}
-                    <div class="col-12 mb-2">
-                        <div class="d-flex justify-content-between align-items-center p-2 {% if balance > 0 %}bg-success bg-opacity-10{% elif balance < 0 %}bg-danger bg-opacity-10{% else %}bg-light{% endif %}">
-                            <span>
-                                <strong>{{ member.username }}</strong>
-                                {% if member == request.user %}(You){% endif %}
-                            </span>
-                            <span class="{% if balance > 0 %}text-success{% elif balance < 0 %}text-danger{% endif %}">
-                                {% if balance > 0 %}
-                                +${{ balance|floatformat:2 }}
-                                {% elif balance < 0 %}
-                                ${{ balance|floatformat:2 }}
-                                {% else %}
-                                $0.00
-                                {% endif %}
-                            </span>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
 
-        <!-- Settlement Suggestions Card -->
-        {% if settlements %}
-        <div class="card mt-3">
+        <!-- Balance Summary Card -->
+        <div class="card nav-card mb-3">
             <div class="card-body">
-                <h5 class="card-title">💡 Settlement Suggestions</h5>
-                <p class="text-muted">To settle all debts:</p>
-                
-                {% for settlement in settlements %}
-                <div class="alert alert-info">
-                    <strong>{{ settlement.from_user.username }}</strong> should pay 
-                    <strong>{{ settlement.to_user.username }}</strong>: 
-                    <strong>${{ settlement.amount|floatformat:2 }}</strong>
+                <h6 class="text-muted text-uppercase mb-3">
+                    <i class="bi bi-bar-chart me-1"></i>Balance Summary
+                </h6>
+                {% for member, balance in balances.items %}
+                <div class="d-flex justify-content-between align-items-center p-2 rounded mb-1
+                    {% if balance > 0 %}bg-success bg-opacity-10
+                    {% elif balance < 0 %}bg-danger bg-opacity-10
+                    {% else %}bg-light{% endif %}">
+                    <span class="small">
+                        <strong>{{ member.username }}</strong>
+                        {% if member == request.user %}
+                        <span class="text-muted">(You)</span>
+                        {% endif %}
+                    </span>
+                    <span class="small fw-semibold
+                        {% if balance > 0 %}text-success
+                        {% elif balance < 0 %}text-danger
+                        {% endif %}">
+                        {% if balance > 0 %}+{% endif %}₹{{ balance|floatformat:2 }}
+                    </span>
                 </div>
                 {% endfor %}
             </div>
         </div>
-        {% else %}
-        <div class="card mt-3">
+
+        <!-- Settlements Card -->
+        <div class="card nav-card mb-3">
             <div class="card-body">
-                <h5 class="card-title">✅ All Settled Up!</h5>
-                <p class="text-muted">No money owed between members.</p>
-            </div>
-        </div>
-        {% endif %}
-        
-        <!-- Quick Actions Card -->
-        <!-- Replace the Quick Actions Card in group_detail.html -->
-        <div class="card mt-3">
-            <div class="card-body">
-                <h5 class="card-title">Group Management</h5>
-                
-                <!-- Group Action Buttons -->
-                <div class="d-grid gap-2">
-                    <a href="{% url 'create_expense' group.id %}" class="btn btn-success">+ Add Expense</a>
-                    
-                    {% if group.created_by == request.user %}
-                        <!-- Group creator options -->
-                        <a href="{% url 'add_member' group.id %}" class="btn btn-outline-primary">Manage Members</a>
-                        <a href="{% url 'delete_group' group.id %}" class="btn btn-outline-danger">Delete Group</a>
-                    {% else %}
-                        <!-- Regular member options -->
-                        <a href="{% url 'leave_group' group.id %}" class="btn btn-outline-warning">Leave Group</a>
-                    {% endif %}
-                    
-                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+                {% if settlements %}
+                <h6 class="text-muted text-uppercase mb-3">
+                    <i class="bi bi-arrow-left-right me-1"></i>Settlements
+                </h6>
+                <p class="text-muted small mb-2">To settle all debts:</p>
+                {% for settlement in settlements %}
+                <div class="d-flex align-items-center justify-content-between p-2 bg-info bg-opacity-10 rounded mb-2">
+                    <div class="small">
+                        <strong>{{ settlement.from_user.username }}</strong>
+                        <i class="bi bi-arrow-right mx-1"></i>
+                        <strong>{{ settlement.to_user.username }}</strong>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-info text-dark">₹{{ settlement.amount|floatformat:2 }}</span>
+                        {% if settlement.from_user == request.user %}
+                        <a href="{% url 'settle_up' group.id %}" class="btn btn-sm btn-success">
+                            <i class="bi bi-check-circle me-1"></i>Settle Up
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-2">
+                    <i class="bi bi-check-circle text-success display-6"></i>
+                    <p class="mt-2 mb-0 text-success fw-semibold">All Settled Up!</p>
+                    <small class="text-muted">No money owed between members.</small>
+                </div>
+                {% endif %}
+
+                <div class="mt-3">
+                    <a href="{% url 'settlement_history' group.id %}" class="btn btn-outline-secondary btn-sm w-100">
+                        <i class="bi bi-clock-history me-1"></i>View Settlement History
+                    </a>
                 </div>
             </div>
         </div>
+
+        <!-- Group Management Card -->
+        <div class="card nav-card">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase mb-3">
+                    <i class="bi bi-gear me-1"></i>Group Management
+                </h6>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'create_expense' group.id %}" class="btn btn-success">
+                        <i class="bi bi-plus-circle me-1"></i>Add Expense
+                    </a>
+                    {% if group.created_by == request.user %}
+                    <a href="{% url 'add_member' group.id %}" class="btn btn-outline-primary">
+                        <i class="bi bi-person-plus me-1"></i>Add Member
+                    </a>
+                    <a href="{% url 'delete_group' group.id %}" class="btn btn-outline-danger">
+                        <i class="bi bi-trash me-1"></i>Delete Group
+                    </a>
+                    {% else %}
+                    <a href="{% url 'leave_group' group.id %}" class="btn btn-outline-warning">
+                        <i class="bi bi-box-arrow-left me-1"></i>Leave Group
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 {% endblock %}
